@@ -3,7 +3,7 @@ package com.bg.bearplane.gui;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.bg.bearplane.engine.Bearplane;
-import com.bg.bearplane.engine.Util;
+import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Log;
 
 public class Button extends Component {
@@ -48,7 +48,7 @@ public class Button extends Component {
 				return;
 			}
 			if (Scene.input.mouseDown[0]) {
-				if (Util.inCenteredBox(mX, mY, x, y, width, height)) {
+				if (BearTool.inCenteredBox(mX, mY, x, y, width, height)) {
 					if (Scene.input.wasMouseJustClicked[0]) {
 						Scene.input.wasMouseJustClicked[0] = false;
 						click();
@@ -65,7 +65,7 @@ public class Button extends Component {
 					click = false;
 				}
 			} else if (Scene.input.mouseDown[1]) {
-				if (Util.inCenteredBox(mX, mY, x, y, width, height)) {
+				if (BearTool.inCenteredBox(mX, mY, x, y, width, height)) {
 					if (Scene.input.wasMouseJustClicked[1]) {
 						Scene.input.wasMouseJustClicked[1] = false;
 						for (int i = 0; i < interval; i++) {

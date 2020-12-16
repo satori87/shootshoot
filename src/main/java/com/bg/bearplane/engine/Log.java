@@ -65,7 +65,7 @@ public class Log {
 	}
 
 	public static void init(String[] args) {
-		Util.assureDir("logs");		
+		BearTool.assureDir("logs");		
 		MinLog.DEBUG(); //keep kryo from running its fucking mouth		
 		if( Bearplane.game.isRelease()) {
 			useFile = true;
@@ -115,7 +115,7 @@ public class Log {
 	}
 
 	static int getHour() {
-		String d = Util.getDate("MM-dd-yy-HH");
+		String d = BearTool.getDate("MM-dd-yy-HH");
 		return Integer.parseInt(d.substring(d.length() - 2));
 	}
 
@@ -131,8 +131,8 @@ public class Log {
 	public static void setLogFile() {
 		try {
 			hour = getHour();
-			String dir = Util.getDate("MM-dd-yy");
-			Util.assureDir("logs/" + dir);
+			String dir = BearTool.getDate("MM-dd-yy");
+			BearTool.assureDir("logs/" + dir);
 			String f = "logs/" + dir + "/" + dir + " Hour " + hour + ".txt";
 			setOut(f);
 		} catch (Exception e) {

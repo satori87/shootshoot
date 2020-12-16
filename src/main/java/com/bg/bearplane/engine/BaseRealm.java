@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.bg.bearplane.engine.Util.Coord;
+import com.bg.bearplane.engine.BearTool.Coord;
 import com.bg.bearplane.gui.Scene;
 
 public abstract class BaseRealm {

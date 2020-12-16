@@ -2,7 +2,7 @@ package com.bg.bearplane.net;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import com.bg.bearplane.engine.Bearplane;
-import com.bg.bearplane.engine.Util;
+import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Log;
 import com.bg.bearplane.net.packets.Authenticate;
 import com.bg.bearplane.net.packets.SimpleClientPacket;
@@ -58,7 +58,7 @@ public class TCPClient {
 			Authenticate na = new Authenticate();
 			na.newAcct = newAcct;
 			na.user = user;
-			na.pass = Util.encryptPassword(pass);
+			na.pass = BearTool.encryptPassword(pass);
 			na.version = Bearplane.game.getClientVersion();
 			sendTCP(na);
 		} catch (Exception e) {

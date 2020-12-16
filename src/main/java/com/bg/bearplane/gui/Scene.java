@@ -16,7 +16,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.bg.bearplane.engine.Bearplane;
-import com.bg.bearplane.engine.Util;
+import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Log;
 
 public abstract class Scene extends Frame {
@@ -170,7 +170,7 @@ public abstract class Scene extends Frame {
 			if (msgBoxFrame != null) {
 				msgBoxFrame.renderComponent();
 				String ss = msgBoxMsgs.get(0);
-				List<String> lines = Util.wrapText(2f, Bearplane.game.getGameWidth() / 2, ss);
+				List<String> lines = BearTool.wrapText(2f, Bearplane.game.getGameWidth() / 2, ss);
 				int i = 0;
 				for (String s : lines) {
 					i++;
@@ -403,6 +403,10 @@ public abstract class Scene extends Frame {
 		}
 	}
 
+	public void draw(Texture t, float x, float y, float rotation, float scale) {
+		batcher.draw(t, x, y, (float)(t.getWidth() / 2), (float)(t.getHeight() / 2), t.getWidth(), t.getHeight(), scale, scale, rotation, 0, 0,t.getWidth(), t.getHeight(), false, true);
+	}
+	
 	public void drawRegion(TextureRegion region, float X, float Y, boolean centered, float rotation, float scale) {
 		try {
 			if (region == null) {

@@ -32,8 +32,8 @@ public class Bearplane extends com.badlogic.gdx.Game {
 	}
 
 	public static BaseConfig loadConfig(String filename, BaseConfig config) {
-		if (Util.exists(filename)) {
-			config = (BaseConfig)Util.importJSON(filename, config.getClass());
+		if (BearTool.exists(filename)) {
+			config = (BaseConfig)BearTool.importJSON(filename, config.getClass());
 		} else {
 			saveConfig(filename, config);
 		}
@@ -41,7 +41,7 @@ public class Bearplane extends com.badlogic.gdx.Game {
 	}
 	
 	public static void saveConfig(String filename, BaseConfig config) {
-		Util.exportJSON(filename, config);
+		BearTool.exportJSON(filename, config);
 	}
 	
 	public static void addTimer(int interval) {

@@ -1,7 +1,7 @@
 package com.bg.bearplane.engine;
 
 import com.badlogic.gdx.graphics.Color;
-import com.bg.bearplane.engine.Util.Coord;
+import com.bg.bearplane.engine.BearTool.Coord;
 import com.bg.bearplane.gui.Scene;
 
 public class Floater {
