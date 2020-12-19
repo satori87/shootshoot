@@ -29,7 +29,7 @@ public class MenuScene extends Scene {
 		addLabel("status", hw, hh + 256, 2f, "", Color.WHITE, true);
 		addFrame("frame", hw, hh - 60 + y, 288, 392, true, true);
 
-		addLabel("title", hw, hh - 182 + y, 3f, BadGame.game.getGameName(), Color.WHITE, true);
+		addLabel("title", hw, hh - 182 + y, 3f, BadGame.getInstance().getGameName(), Color.WHITE, true);
 
 		addButton("play", hw, hh - 96 + y, 256, 48, "PLAY");
 		addButton("lol", hw, hh - 32 + y, 256, 48, "Tutorial");
@@ -44,8 +44,8 @@ public class MenuScene extends Scene {
 		buttons.get("c1").toggle = true;
 		buttons.get("c2").toggle = true;
 
-		buttons.get("c0").toggled = true;
-		buttons.get("c1").toggled = false;
+		buttons.get("c0").toggled = false;
+		buttons.get("c1").toggled = true;
 		buttons.get("c2").toggled = false;
 
 		
@@ -55,7 +55,6 @@ public class MenuScene extends Scene {
 	public void update() {
 	}
 
-	int c = 0;
 
 	public void render() {
 		getLabel("status").text = status;
@@ -66,6 +65,8 @@ public class MenuScene extends Scene {
 		drawFont(0,1366/2, 650,s,true,3f);
 	}
 
+	PlayScene.Characters characterToPlay = PlayScene.Characters.HANK;
+	
 	@Override
 	public void buttonPressed(String id) {
 		//Assets.sounds.get("click").play();
@@ -75,12 +76,12 @@ public class MenuScene extends Scene {
 		int a = 0;
 		switch (id) {
 		case "play":
-			BadGame.game.play(c);
+			BadGame.getInstance().play(characterToPlay);
 			Assets.sounds.get("clickplay").play();
 			break;
 		case "lol":
 			PlayScene.tutorial = true;
-			BadGame.game.play(c);
+			BadGame.getInstance().play(characterToPlay);
 			Assets.sounds.get("clicktutorial").play();
 			break;
 		case "options":
@@ -93,21 +94,20 @@ public class MenuScene extends Scene {
 			a = BearTool.randInt(0, 1);
 			Assets.sounds.get("clinton" + a).play();
 			buttons.get("c0").toggled = true;
-			c = 0;
+			characterToPlay = PlayScene.Characters.HILLARY;
 			break;
 		case "c1":
 			a = BearTool.randInt(0, 2);
 			Assets.sounds.get("hank" + a).play();
 			buttons.get("c1").toggled = true;
-			c = 1;
+			characterToPlay = PlayScene.Characters.HANK;
 			break;
 		case "c2":
 			a = BearTool.randInt(0, 2);
 			Assets.sounds.get("thomas" + a).play();
 			buttons.get("c2").toggled = true;
-			c = 2;
+			characterToPlay = PlayScene.Characters.THOMAS;
 			break;
-
 		}
 	}
 

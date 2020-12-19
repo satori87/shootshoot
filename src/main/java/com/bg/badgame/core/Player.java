@@ -2,10 +2,26 @@ package com.bg.badgame.core;
 
 import com.bg.bearplane.engine.Log;
 import com.gdx420.badgame.scenes.PlayScene;
+import com.bg.badgame.core.DirectionUtility.CardinalDirection;
 
 public class Player {
-	public static float x = 200;
-	public static float y = 300;
+	// singleton pattern
+	public static Player getInstance() {
+		return instance;
+	}
+	private static final Player instance = new Player();	
+	private Player() {
+		resetPlayer();
+	}
+	
+	public void resetPlayer() {
+		hp = 100;
+		position = new Position(200, 300);
+	}
+	
+	public Position position = new Position(200, 300);
+	
+	public CardinalDirection direction = CardinalDirection.NORTH;
 
 	public static boolean[] key = new boolean[3];
 	public static boolean[] lock = new boolean[3];
@@ -22,8 +38,12 @@ public class Player {
 
 	public void die() {
 		PlayScene.showDialog("You got dead. Try again.");
-		PlayScene.play.reset();
-		PlayScene.level--;
+		BadGame.getInstance().resetLevel();
 		Player.hp = 100;
+	}
+	
+	public void move(Position moveDelta) {
+		position.x += moveDelta.x;
+		position.y += moveDelta.y;
 	}
 }

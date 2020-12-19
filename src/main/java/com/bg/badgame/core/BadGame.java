@@ -10,7 +10,14 @@ import com.gdx420.badgame.scenes.PlayScene;
 import com.gdx420.badgame.scenes.UpdateScene;
 
 public class BadGame implements Bearable {
-
+	// singleton pattern
+	public static BadGame getInstance() {
+		return instance;
+	}
+	private static final BadGame instance = new BadGame();	
+	private BadGame() {
+		config = (Config)Bearplane.loadConfig(CONFIG_FILE, config);
+	}
 	public static final boolean IS_RELEASE = false; // change to true for release
 	public static final int GAME_WIDTH = 1366;
 	public static final int GAME_HEIGHT = 768;
@@ -19,8 +26,7 @@ public class BadGame implements Bearable {
 	public static final String EFFECTS_PATH = "assets/effects";
 	public static final String ASSETS_PATH = "assets";
 	public static final String CONFIG_FILE = "config.txt";
-
-	public static BadGame game;
+	
 	public static Assets assets = new Assets();
 	public Realm realm = new Realm(assets);
 	public Config config = new Config();
@@ -35,19 +41,19 @@ public class BadGame implements Bearable {
 	public static OptionsScene optionsScene = new OptionsScene();
 	public static UpdateScene updateScene = new UpdateScene();
 	public static PlayScene playScene = new PlayScene();
-
-	public BadGame() {
-		game = this;
-		config = (Config)Bearplane.loadConfig(CONFIG_FILE, config);
-	}
+	
 
 	public void create() {
 		Log.info(GAME_NAME + " Initializing");		
 	}
 	
-	public void play(int c) {
+	public void play(PlayScene.Characters characterSelected) {
 		Scene.change("play");
-		playScene.play(c);
+		playScene.play(characterSelected);
+	}
+	
+	public void resetLevel() {
+		playScene.resetLevel();
 	}
 
 	@Override

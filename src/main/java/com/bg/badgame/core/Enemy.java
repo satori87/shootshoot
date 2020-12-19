@@ -56,14 +56,15 @@ public class Enemy {
 			return;
 		boolean a = false;
 		
+		Player player = Player.getInstance();
 		if (tick > movestamp) {
 			m = false;
 			movestamp = tick + movetime;
-			float d = (float) BearTool.distance(x, y, Player.x, Player.y);
+			float d = (float) BearTool.distance(x, y, player.position.x, player.position.y);
 			if (d < 400 && d > 120) {
 				a = true;
 				m = true;
-				rot = (float) Math.toDegrees(Math.atan2(Player.y - y, Player.x - x));
+				rot = (float) Math.toDegrees(Math.atan2(player.position.y - y, player.position.x - x));
 			} else if (d < 400) {
 				a = true;
 				m = false;
@@ -94,7 +95,7 @@ public class Enemy {
 		if (a && tick > attackstamp) {
 			Map m;
 			attackstamp = tick + attacktime;
-			scene.maps[scene.map].bullets.add(new Bullet(0, x, y, rot, this));
+			scene.maps[scene.currentMap].bullets.add(new Bullet(0, x, y, rot, this));
 		}
 
 	}

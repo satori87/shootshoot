@@ -1,6 +1,5 @@
 package com.gdx420.badgame.scenes;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.badlogic.gdx.Input.Keys;
@@ -8,61 +7,46 @@ import com.badlogic.gdx.graphics.Color;
 import com.bg.badgame.core.Assets;
 import com.bg.badgame.core.BadGame;
 import com.bg.badgame.core.Bullet;
+import com.bg.badgame.core.DirectionUtility;
 import com.bg.badgame.core.Enemy;
 import com.bg.badgame.core.Map;
 import com.bg.badgame.core.Player;
+import com.bg.badgame.core.Position;
 import com.bg.badgame.core.Prop;
 import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Log;
 import com.bg.bearplane.gui.Button;
 import com.bg.bearplane.gui.Frame;
 import com.bg.bearplane.gui.Scene;
+import com.bg.badgame.core.DirectionUtility.CardinalDirection;
 
-public class PlayScene extends Scene {
-
-	public static boolean tutorial = false;
-	public int dir = 0; // n,ne,e,se,s,sw,w,nw
-	public static int character = 0; // 0 = hillary 1 = hank 2 = thomas
-	public float rad = 16;
-	public int map = 0;
-	public long attacktimer = 0;
-	public long attacktime = 1500;
-
-	public Player player = new Player();
-
-	public String[] characternames = { "Artillery Clinton", "Tank Hill", "Thomas the Tank" };
-
-	public static boolean dialog = true;
-	public static String dialogStr = "Hello and welcome to Shoot shoot: the game that tanks. Each level you will have to help some memes out but watch out for violent memes";
-	public static Frame f;
-	public int[] quest = new int[3];
-	public int[] key = new int[3];
-	public int[] lock = new int[3];
-	public static int level = 0;
-	public String[] mapnames;
-
-	public static PlayScene play;
+public class PlayScene extends Scene {	
+	public enum Characters { HILLARY, HANK, THOMAS }	
+	public static Characters character = Characters.HANK;
+	public static int level = 0;	
 	
-	public void play(int c) {
-		Player.hp = 100;
-		character = c;
-		level = 0;
-		reset();
+	public void play(Characters characterToPlay) {
+		character = characterToPlay;
+		resetLevel();
 	}
 
-	public Map[] maps = new Map[16];
-
+	public String[] mapnames;
+	
 	public PlayScene() {
-		play = this;
 		String itemtext = BearTool.readFile("item.txt");
 		itemnames = itemtext.split("\\r?\\n");
 		String maptext = BearTool.readFile("map.txt");
 		mapnames = maptext.split("\\r?\\n");
-		reset();
+		resetLevel();
 	}
 
-	public void reset() {
-		level++;
+	public int[] quest = new int[3];
+	public int[] key = new int[3];
+	public int[] lock = new int[3];
+	public Map[] maps = new Map[16];
+	public Player player = Player.getInstance();;	
+	
+	public void resetLevel() {
 		for (int i = 0; i < 16; i++) {
 			maps[i] = new Map(i, mapnames[BearTool.randInt(0, mapnames.length - 1)]);
 		}
@@ -70,6 +54,32 @@ public class PlayScene extends Scene {
 			Player.key[i] = false;
 			Player.lock[i] = false;
 		}
+		for (int timesRandomized = 0; timesRandomized < 6; timesRandomized++)
+		{
+			RandomizeMap();
+		}
+		for (int i = 0; i < 16; i++) {
+			if (maps[i].key >= 0) {				
+				maps[i].props.add(getProp(maps[i].key));
+			}
+			if (maps[i].lock >= 0) {
+				maps[i].props.add(getProp(maps[i].lock + 3));
+			}
+		}
+		int randomNumber;
+		for (int i = 0; i < 3; i++) {
+			randomNumber = BearTool.randInt(0, itemnames.length - 1);
+			key[i] = randomNumber;
+			lock[i] = randomNumber;
+			randomNumber = BearTool.randInt(0, 5);
+			quest[i] = randomNumber;
+		}
+
+		
+	}
+	
+	public void RandomizeMap()
+	{
 		boolean found = false;
 		int n;
 		do {
@@ -79,85 +89,25 @@ public class PlayScene extends Scene {
 				found = true;
 			}
 		} while (!found);
-		found = false;
-		do {
-			n = BearTool.randInt(0, 15);
-			if (maps[n].key < 0 && maps[n].lock < 0) {
-				maps[n].key = 1;
-				found = true;
-			}
-		} while (!found);
-		found = false;
-		do {
-			n = BearTool.randInt(0, 15);
-			if (maps[n].key < 0 && maps[n].lock < 0) {
-				maps[n].key = 2;
-				found = true;
-			}
-		} while (!found);
-		found = false;
-		do {
-			n = BearTool.randInt(0, 15);
-			if (maps[n].key < 0 && maps[n].lock < 0) {
-				maps[n].lock = 0;
-				found = true;
-			}
-		} while (!found);
-		found = false;
-		do {
-			n = BearTool.randInt(0, 15);
-			if (maps[n].key < 0 && maps[n].lock < 0) {
-				maps[n].lock = 1;
-				found = true;
-			}
-		} while (!found);
-		found = false;
-		do {
-			n = BearTool.randInt(0, 15);
-			if (maps[n].key < 0 && maps[n].lock < 0) {
-				maps[n].lock = 2;
-				found = true;
-			}
-		} while (!found);
-		for (int i = 0; i < 16; i++) {
-			if (maps[i].key >= 0) {
-				Prop p = new Prop(0);
-				p.npc = true;
-				p.type = maps[i].key;
-				p.x = 400;
-				p.y = 400;
-				maps[i].props.add(p);
-			}
-			if (maps[i].lock >= 0) {
-				Prop p = new Prop(0);
-				p.npc = true;
-				p.type = maps[i].lock + 3;
-				p.x = 400;
-				p.y = 400;
-				maps[i].props.add(p);
-			}
-		}
-		for (int i = 0; i < 3; i++) {
-			n = BearTool.randInt(0, itemnames.length - 1);
-			key[i] = n;
-			lock[i] = n;
-			n = BearTool.randInt(0, 5);
-			quest[i] = n;
-		}
-
-		player = new Player();
+	}
+	
+	public Prop getProp(int type)	{
+		Prop p = new Prop(0);
+		p.npc = true;
+		p.type = type;
+		p.position.x = 400;
+		p.position.y = 400;		
+		return p;
 	}
 
-	String[] itemnames;
-
+	public static boolean dialog = true;
+	public static Frame currentFrame;
 	public void start() {
 		super.start();
-		f = new Frame(this, "dialog", 683, 384, 600, 600, true, true);
-		// f.visible = false;
-		// f.addButton("dialogbtn", 683, 600, 200, 32, "Ok I guess");
+		currentFrame = new Frame(this, "dialog", 683, 384, 600, 600, true, true);
 		Button b = new Button(this, "dialogbtn", 683, 630, 200, 32, "Ok I guess", false);
-		f.buttons.put("dialogbtn", b);
-		frames.put("dialog", f);
+		currentFrame.buttons.put("dialogbtn", b);
+		frames.put("dialog", currentFrame);
 		Assets.sounds.get("mus0").stop();
 		Assets.sounds.get("mus1").loop();
 
@@ -169,239 +119,238 @@ public class PlayScene extends Scene {
 			checkLevel();
 		}
 	}
+			
+	void tryMovePlayer(CardinalDirection directionToMove) {
+		
+		Position moveDelta = determineMovements(directionToMove);
+		
+		if (collides(player, player.position.x + moveDelta.x, player.position.y + moveDelta.y, collisionRadius) == null) {
+			player.move(moveDelta);			
+		} else {
+			// TODO: play bonk sound?
+		}
+		
+		tryMapChange();
+	}
+	
+	void tryMapChange() {
+		if (player.position.x < 0) {
+			player.position.x = BadGame.GAME_WIDTH - 10;
+			currentMap = getExit(currentMap, CardinalDirection.EAST);
+		} else if (player.position.x > BadGame.GAME_WIDTH) {
+			player.position.x = 10;
+			currentMap = getExit(currentMap, CardinalDirection.WEST);
+		} else if (player.position.y < 0) {
+			player.position.y = BadGame.GAME_HEIGHT - 10;
+			currentMap = getExit(currentMap, CardinalDirection.NORTH);
+		} else if (player.position.y > BadGame.GAME_HEIGHT) {
+			player.position.y = 10;
+			currentMap = getExit(currentMap, CardinalDirection.SOUTH);
+		}
+	}
+	
+	Position determineMovements(CardinalDirection directionToMove) {
+		Position moveDelta = new Position();
+		float distanceToMove = 6.5f;
+		
+		switch (directionToMove) {
+		case NORTHEAST: 
+			moveDelta.x = -distanceToMove;
+		case NORTH: 
+			moveDelta.y = -distanceToMove;
+			break;
+		case SOUTHEAST:
+			moveDelta.y = distanceToMove;
+		case EAST: 
+			moveDelta.x = -distanceToMove;
+			break;
+		case SOUTHWEST: 
+			moveDelta.x = distanceToMove;
+		case SOUTH: 
+			moveDelta.y = distanceToMove;
+			break;
+		case NORTHWEST: 
+			moveDelta.y = -distanceToMove;
+		case WEST: 
+			moveDelta.x = distanceToMove;
+			break;
+		default:
+			break;
+		}
+		return moveDelta;
+	}
+	
+	int getExit(int map, CardinalDirection exitDirection) {
+		int mapIndex = map;
+		switch (exitDirection) {
+			case EAST:
+				if (mapIndex < 4) {
+					mapIndex += 12;
+				} else {
+					mapIndex -= 4;
+				}
+				break;
+			case SOUTH:
+				if (mapIndex >= 12) {
+					mapIndex -= 12;
+				} else {
+					mapIndex += 4;
+				}
+				break;
+			case NORTH:
+				if (mapIndex % 4 == 0) {
+					mapIndex += 3;
+				} else {
+					mapIndex -= 1;
+				}
+				break;
+			case WEST:
+				if (mapIndex % 4 == 3) {
+					mapIndex -= 3;
+				} else {
+					mapIndex += 1;
+				}
+				break;
+		default:
+			break;
+		}
+		return mapIndex;
+	}
 
-	public Object collides(Object owner, float x, float y, float rad) {
-		for (Prop p : maps[map].props) {
-			if (BearTool.distance(x, y, p.x, p.y) < p.rad + rad) {
+	private void checkKeys() {
+		checkMoveDirection();		
+		checkLookDirection();		
+		if (input.keyDown[Keys.ESCAPE])
+			Scene.change("menu");
+		if (input.keyDown[Keys.SPACE])
+			fireBullet();
+	}
+	
+	void checkMoveDirection() {
+		CardinalDirection moveDirection = CardinalDirection.NO_DIRECTION;
+		if (input.keyDown[Keys.UP] && input.keyDown[Keys.LEFT]) {
+			moveDirection = CardinalDirection.NORTHEAST;
+		} else if (input.keyDown[Keys.UP] && input.keyDown[Keys.RIGHT]) {
+			moveDirection = CardinalDirection.NORTHWEST;
+		} else if (input.keyDown[Keys.DOWN] && input.keyDown[Keys.LEFT]) {
+			moveDirection = CardinalDirection.SOUTHEAST;
+		} else if (input.keyDown[Keys.DOWN] && input.keyDown[Keys.RIGHT]) {
+			moveDirection = CardinalDirection.SOUTHWEST;
+		} else if (input.keyDown[Keys.UP]) {
+			moveDirection = CardinalDirection.NORTH;
+		} else if (input.keyDown[Keys.DOWN]) {
+			moveDirection = CardinalDirection.SOUTH;
+		} else if (input.keyDown[Keys.LEFT]) {
+			moveDirection = CardinalDirection.EAST;
+		} else if (input.keyDown[Keys.RIGHT]) {
+			moveDirection = CardinalDirection.WEST;
+		}
+		if (moveDirection != CardinalDirection.NO_DIRECTION) {
+			tryMovePlayer(moveDirection);
+		}
+	}
+	
+	void checkLookDirection() {
+		if (input.keyDown[Keys.W] && input.keyDown[Keys.A]) {
+			player.direction = CardinalDirection.NORTHEAST;
+		} else if (input.keyDown[Keys.W] && input.keyDown[Keys.D]) { 
+			player.direction = CardinalDirection.NORTHWEST;
+		} else if (input.keyDown[Keys.A] && input.keyDown[Keys.S]) { 
+			player.direction = CardinalDirection.SOUTHEAST;
+		} else if (input.keyDown[Keys.S] && input.keyDown[Keys.D]) { 
+			player.direction = CardinalDirection.SOUTHWEST;
+		} else if (input.keyDown[Keys.W]) { 
+			player.direction = CardinalDirection.NORTH;
+		} else if (input.keyDown[Keys.A]) { 
+			player.direction = CardinalDirection.EAST;
+		} else if (input.keyDown[Keys.S]) { 
+			player.direction = CardinalDirection.SOUTH;
+		} else if (input.keyDown[Keys.D]) { 
+			player.direction = CardinalDirection.WEST;
+		}
+	}
+	
+	public long attacktimer = 0;
+	public long attacktime = 1500;
+	void fireBullet() {
+		if (tick > attacktimer) {
+			attacktimer = tick + attacktime;
+			maps[currentMap].bullets.add(new Bullet(0, player.position.x, player.position.y, DirectionUtility.getRotationAngle(player.direction), player));
+		}
+	}
+
+	public int currentMap = 0;
+	public float collisionRadius = 16;
+	public Object collides(Object owner, float x, float y, float radius) {
+		for (Prop p : maps[currentMap].props) {
+			if (BearTool.distance(x, y, p.position.x, p.position.y) < p.radius + radius) {
 				return p;
 			}
 		}
 		if (owner instanceof Player) {
-			for (Enemy p : maps[map].enemies) {
-				if (p.active && BearTool.distance(x, y, p.x, p.y) < p.rad + rad) {
+			for (Enemy p : maps[currentMap].enemies) {
+				if (p.active && BearTool.distance(x, y, p.x, p.y) < p.rad + radius) {
 					return p;
 				}
 			}
 		} else {
-			if (BearTool.distance(x, y, Player.x, Player.y) < this.rad + rad) {
+			if (BearTool.distance(x, y, player.position.x, player.position.y) < this.collisionRadius + radius) {
 				return BadGame.playScene.player;
 			}
 		}
 		return null;
 	}
 
+
+	public static String dialogStr = "Hello and welcome to Shoot shoot: the game that tanks. Each level you will have to help some memes out but watch out for violent memes";
 	public static void showDialog(String s) {
 		dialog = true;
 		dialogStr = s;
 	}
 
-	void move(int d) {
-		float mx = 0;
-		float my = 0;
-		float dist = 6.5f;
-		// dir = d;
-		switch (d) {
-		case 0: // n
-			my = -dist;
-			break;
-		case 1: // ne
-			my = -dist;
-			mx = dist;
-			break;
-		case 2: // e
-			mx = dist;
-			break;
-		case 3: // se
-			mx = dist;
-			my = dist;
-			break;
-		case 4: // s
-			my = dist;
-			break;
-		case 5: // sw
-			my = dist;
-			mx = -dist;
-			break;
-		case 6: // w
-			mx = -dist;
-			break;
-		case 7: // nw
-			my = -dist;
-			mx = -dist;
-			break;
-		}
-		if (collides(player, Player.x + mx, Player.y + my, rad) == null) {
-			Player.x += mx;
-			Player.y += my;
-		} else {
-			// play bonk sound?
-		}
-		if (Player.x < 0) {
-			Player.x = BadGame.GAME_WIDTH - 10;
-			map = getExit(map, 2);
-		} else if (Player.x > BadGame.GAME_WIDTH) {
-			Player.x = 10;
-			map = getExit(map, 3);
-		} else if (Player.y < 0) {
-			Player.y = BadGame.GAME_HEIGHT - 10;
-			map = getExit(map, 0);
-		} else if (Player.y > BadGame.GAME_HEIGHT) {
-			Player.y = 10;
-			map = getExit(map, 1);
-		}
-
-	}
-
-	int getExit(int map, int ed) {
-		int m = map;
-		switch (ed) {
-		case 0:
-			if (m < 4) {
-				m += 12;
-			} else {
-				m -= 4;
-			}
-			break;
-		case 1:
-			if (m >= 12) {
-				m -= 12;
-			} else {
-				m += 4;
-			}
-			break;
-		case 2:
-			if (m % 4 == 0) {
-				m += 3;
-			} else {
-				m -= 1;
-			}
-			break;
-		case 3:
-			if (m % 4 == 3) {
-				m -= 3;
-			} else {
-				m += 1;
-			}
-			break;
-		}
-		return m;
-	}
-
-	private void checkKeys() {
-		int movedir = -1;
-		if (input.keyDown[Keys.UP] && input.keyDown[Keys.LEFT]) {
-			movedir = 7;
-		} else if (input.keyDown[Keys.UP] && input.keyDown[Keys.RIGHT]) {
-			movedir = 1;
-		} else if (input.keyDown[Keys.DOWN] && input.keyDown[Keys.LEFT]) {
-			movedir = 5;
-		} else if (input.keyDown[Keys.DOWN] && input.keyDown[Keys.RIGHT]) {
-			movedir = 3;
-		} else if (input.keyDown[Keys.UP]) {
-			movedir = 0;
-		} else if (input.keyDown[Keys.DOWN]) {
-			movedir = 4;
-		} else if (input.keyDown[Keys.LEFT]) {
-			movedir = 6;
-		} else if (input.keyDown[Keys.RIGHT]) {
-			movedir = 2;
-		}
-		if (movedir >= 0) {
-			move(movedir);
-		}
-		if (input.keyDown[Keys.W] && input.keyDown[Keys.A]) { // upper left
-			dir = 7;
-		} else if (input.keyDown[Keys.W] && input.keyDown[Keys.D]) { // upper right
-			dir = 1;
-		} else if (input.keyDown[Keys.A] && input.keyDown[Keys.S]) { // lower left
-			dir = 5;
-		} else if (input.keyDown[Keys.S] && input.keyDown[Keys.D]) { // lower right
-			dir = 3;
-		} else if (input.keyDown[Keys.W]) { // up
-			dir = 0;
-		} else if (input.keyDown[Keys.A]) { // left
-			dir = 6;
-		} else if (input.keyDown[Keys.S]) { // down
-			dir = 4;
-		} else if (input.keyDown[Keys.D]) { // right
-			dir = 2;
-		}
-		if (input.keyDown[Keys.ESCAPE]) {
-			Scene.change("menu");
-		}
-
-		if (input.keyDown[Keys.SPACE]) {
-			if (tick > attacktimer) {
-				attacktimer = tick + attacktime;
-				maps[map].bullets.add(new Bullet(0, Player.x, Player.y, getRot(dir), player));
-			}
-
-		}
-
-	}
-
-	float getRot(int d) {
-		switch (d) {
-		case 0:
-			return 270;
-		case 1:
-			return 315;
-		case 2:
-			return 0;
-		case 3:
-			return 45;
-		case 4:
-			return 90;
-		case 5:
-			return 135;
-		case 6:
-			return 180;
-		case 7:
-			return 225;
-		}
-		return 0;
-	}
-
+	
+	public static boolean tutorial = false;	
 	public void render() {
-		String gg = "g" + maps[map].g;
-		//Log.debug("gg:"+gg);
-		//draw(Assets.textures.get("g4"),0,0,90,1f);
+		String gg = "g" + maps[currentMap].g;
 		draw(Assets.textures.get(gg), 0,0,0,0,1366,768);
 		if (!dialog) {
 			
-			draw(Assets.textures.get("c" + character), Player.x - 64, Player.y - 64, getRot(dir), 1f);
-			//draw(Assets.textures.get("c" + character + "a"), Player.x - 64, Player.y - 64 - 32, getRot(dir), 1f);
+			draw(Assets.textures.get("c" + character.ordinal()), 
+				player.position.x - 64, 
+				player.position.y - 64, 
+				DirectionUtility.getRotationAngle(player.direction), 
+				1f);
 			
-			for (Prop p : maps[map].props) {
+			for (Prop p : maps[currentMap].props) {
 				if (p.npc) {
-					draw(Assets.textures.get("npc" + p.type), p.x - 48, p.y - 48, p.rot, 1f);
+					draw(Assets.textures.get("npc" + p.type), p.position.x - 48, p.position.y - 48, p.rotation, 1f);
 				} else {
-					draw(Assets.textures.get("prop" + p.type), p.x - 48, p.y - 48, p.rot, 1f);
+					draw(Assets.textures.get("prop" + p.type), p.position.x - 48, p.position.y - 48, p.rotation, 1f);
 				}
 			}
-			for (Enemy p : maps[map].enemies) {
+			for (Enemy p : maps[currentMap].enemies) {
 				p.update(this, tick);
 				p.render(this);
 			}
-			for (Bullet b : maps[map].bullets) {
+			for (Bullet b : maps[currentMap].bullets) {
 				b.update(this, tick);
 				b.render(this);
 			}
 			if (tutorial) {
 				drawFont(0, BadGame.GAME_WIDTH / 2, BadGame.GAME_HEIGHT / 2, "TUTORIAL", true, 6f);
 			}
-			f.visible = false;
+			currentFrame.visible = false;
 		} else {
-			f.visible = true;
+			currentFrame.visible = true;
 			List<String> ss = BearTool.wrapText(2, 560, dialogStr);
-			f.render();
+			currentFrame.render();
 			int i = 0;
 			for (String s : ss) {
 				drawFont(0, 393, 90 + i * 30, s, false, 2, Color.WHITE);
 				i++;
 			}
 		}
-		drawFont(0, BadGame.GAME_WIDTH / 2, 20, maps[map].name + "[LEVEL " + level + "]", true, 3f);
+		drawFont(0, BadGame.GAME_WIDTH / 2, 20, maps[currentMap].name + "[LEVEL " + level + "]", true, 3f);
 	}
 
 	@Override
@@ -431,55 +380,54 @@ public class PlayScene extends Scene {
 	
 	void checkLevel() {
 		if(!dialog) { 
-
 			if(Player.lock[0] && Player.lock[1] && Player.lock[2]) {
 				showDialog("Level " + level + " win");
-				reset();
+				resetLevel();
+				level++;
 				int a = BearTool.randInt(0, 2);
 				Assets.sounds.get("win" + a).play();
 				if(a == 2) {
 					level--;
 				}
-			}
-			
+			}			
 		}
 	}
 	
 	@Override
 	public void mouseDown(int x, int y, int button) {
 		String m = "";
-		for (Prop p : maps[map].props) {
+		for (Prop p : maps[currentMap].props) {
 			if (p.npc) {
-				if (BearTool.distance(x, y, p.x, p.y) < 48) {
+				if (BearTool.distance(x, y, p.position.x, p.position.y) < 48) {
 					Log.debug("clicked npc");
-					if (maps[map].key >= 0) {
-						Log.debug("its giver " + maps[map].key);
-						if (Player.key[maps[map].key]) {
-							m = giverMsg(maps[map].key, true);
+					if (maps[currentMap].key >= 0) {
+						Log.debug("its giver " + maps[currentMap].key);
+						if (Player.key[maps[currentMap].key]) {
+							m = giverMsg(maps[currentMap].key, true);
 						} else {
-							Player.key[maps[map].key] = true;
-							m = giverMsg(maps[map].key, false);
+							Player.key[maps[currentMap].key] = true;
+							m = giverMsg(maps[currentMap].key, false);
 						}
 					}
-					if (maps[map].lock >= 0) {
+					if (maps[currentMap].lock >= 0) {
 						// if (Player.lock[maps[map].lock]) {
 						// m = getterMsg(maps[map].lock, true);
 						// display already did it msg
 						// } else {
-						if (Player.lock[maps[map].lock]) { // player already completed lock
+						if (Player.lock[maps[currentMap].lock]) { // player already completed lock
 							m = "I'm good for now";
 						} else { // player has not completed lock
-							if (Player.key[maps[map].lock]) {
-								Player.lock[maps[map].lock] = true;
-								m = getterMsg(maps[map].lock, true);
+							if (Player.key[maps[currentMap].lock]) {
+								Player.lock[maps[currentMap].lock] = true;
+								m = getterMsg(maps[currentMap].lock, true);
 								////checkLevel = true;
 							} else {
-								m = getterMsg(maps[map].lock, false);
+								m = getterMsg(maps[currentMap].lock, false);
 							}
 						}
 
 						// }
-						Log.debug("its getter " + maps[map].lock);
+						Log.debug("its getter " + maps[currentMap].lock);
 					}
 					if (m.length() > 0) {
 						PlayScene.showDialog(m);
@@ -520,6 +468,8 @@ public class PlayScene extends Scene {
 			"We appreciate your interest in {X}. Our customer service is temporarily offline. Sorry, no refunds.",
 			"404 ERROR! PAGE NOT FOUND" };
 
+	String[] itemnames;
+	
 	public String getterMsg(int lock, boolean give) {
 		String n = itemnames[this.lock[lock]];
 		String m = "";
@@ -557,8 +507,9 @@ public class PlayScene extends Scene {
 		return m;
 	}
 
+	public String[] characternames = { "Artillery Clinton", "Tank Hill", "Thomas the Tank" };
 	public String getCharacterName() {
-		return characternames[character];
+		return characternames[character.ordinal()];
 	}
 
 	@Override

@@ -7,8 +7,7 @@ public class ClientMain {
 
 	public static void main(String[] args) {
 		try {	
-			
-			//Bearplane.createApplication(new Bearplane(new BadGame(), args));
+			Bearplane.createApplication(new Bearplane(BadGame.getInstance(), args));
 		} catch (Exception e) {
 			Log.error(e);
 			System.exit(0);
